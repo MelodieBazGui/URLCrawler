@@ -41,7 +41,7 @@ public class CrawlerMain {
 		private JPanel topPanel = new JPanel();
 			private JLabel crawlerLabel = new JLabel("Strycky's Crawler");
 			private JLabel URLLabel = new JLabel("URL : ");
-			private JTextArea URLTextArea = new JTextArea("https://www.royalqueenseeds.fr");
+			private JTextArea URLTextArea = new JTextArea("");
 		private JPanel centerPanel = new JPanel();
 			private JScrollPane linkScrollPane = new JScrollPane();
 			private JButton seeResultButton = new JButton("See Results");
