@@ -1,0 +1,19 @@
+[2025-06-10 00:08:44] INFO - Crawler started.
+[2025-06-10 00:08:44] INFO - Crawling process completed in 36.023s
+[2025-06-10 00:08:44] INFO - Starting crawl at: https://royalqueenseeds.fr
+[2025-06-10 00:08:44] INFO - Crawling: https://royalqueenseeds.fr
+[2025-06-10 00:08:45] INFO - HTTP response: 200 for https://royalqueenseeds.fr
+[2025-06-10 00:08:45] INFO - Fetched https://royalqueenseeds.fr in 238ms
+[2025-06-10 00:08:45] WARN - Invalid link skipped: javascript:void(0)
+[2025-06-10 00:08:45] WARN - Invalid link skipped: javascript:void(0)
+[2025-06-10 00:08:45] WARN - Invalid link skipped: javascript:void(0)
+[2025-06-10 00:08:45] WARN - Invalid link skipped: #
+[2025-06-10 00:08:45] WARN - Invalid link skipped: #
+[2025-06-10 00:08:45] WARN - Invalid link skipped: javascript:void(0)
+[2025-06-10 00:08:45] WARN - Invalid link skipped: #redirect_popup
+[2025-06-10 00:08:45] WARN - Invalid link skipped: #open-settings-popup
+[2025-06-10 00:08:45] WARN - Invalid link skipped: #open-privacy-popup
+[2025-06-10 00:08:45] WARN - Invalid link skipped: #
+[2025-06-10 00:08:45] INFO - ✅ Crawl finished in 322 ms
+[2025-06-10 00:08:45] INFO - Crawling process completed.
+[2025-06-10 00:08:45] INFO - See Results Button pressed

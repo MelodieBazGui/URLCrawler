@@ -39,6 +39,7 @@ public class CrawlerController {
      * Logs most actions taken in debut_log.txt
      */
     public void startCrawl() {
+    	new File(System.getProperty("user.dir") + "found_urls.txt");
     	finishedCrawling = false;
         long startTime = System.currentTimeMillis();
 

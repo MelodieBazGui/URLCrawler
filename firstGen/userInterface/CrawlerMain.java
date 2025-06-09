@@ -19,11 +19,15 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 
-import stryckyzzzComponents.StryckyzzzFilterComponent;
+import stryckyzzzComponents.StryckyzzzFilterPanel;
 import stryckyzzzComponents.UrlButtonPanel;
 import stryckyzzzUrlCrawler.CrawlerController;
 import utils.Logger;
+import utils.interfaces.ContentChangeListener;
 
 import java.awt.FlowLayout;
 import javax.swing.JScrollPane;
@@ -41,18 +45,20 @@ public class CrawlerMain {
 
     public static final String CrawlerVersion = "CustomCrawler/0.1-dev";
     private static CrawlerController cc;
+    private static final String defaultLinkFormat = "https://www.";
 	
 	private  JFrame frame = new JFrame();
 		private JPanel topPanel = new JPanel();
 			private JLabel crawlerLabel = new JLabel("Strycky's Crawler");
 			private JLabel URLLabel = new JLabel("URL : ");
-			private JTextArea URLTextArea = new JTextArea("");
+			private JTextArea StryckyzzzJTextArea = new StryckyzzzJTextArea(defaultLinkFormat);
 		private JPanel centerPanel = new JPanel();
 			private JScrollPane linkScrollPane = new JScrollPane();
 				private JPanel linkPanel = new JPanel();
 			private JButton seeResultButton = new JButton("See Results");
 		private JPanel filterPanel = new JPanel();
 			private JScrollPane filterScrollPane = new JScrollPane();
+				private StryckyzzzFilterPanel SzzzFP = new StryckyzzzFilterPanel();
 			private JButton filterButton = new JButton("Filter Results");
 		private JPanel bottomPanel = new JPanel();
 			private JButton stopCrawlingButton = new JButton("Stop Crawling");
@@ -79,6 +85,30 @@ public class CrawlerMain {
 			URLLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 			topPanel.add(URLLabel, BorderLayout.CENTER);
 				URLLabel.setFont(new Font("URLLabelName", Font.BOLD, 18));
+				URLLabel.addContentChangeListener(new ContentChangeListener() {
+	                private void checkEmpty() {
+	                    SwingUtilities.invokeLater(() -> {
+	                        if (URLLabel.getText().trim().isEmpty()) {
+	                        	URLLabel.setText(defaultLinkFormat);
+	                        }
+	                    });
+	                }
+
+	                @Override
+	                public void insertUpdate(DocumentEvent e) {
+	                    // Optional: do nothing on insert
+	                }
+
+	                @Override
+	                public void removeUpdate(DocumentEvent e) {
+	                    checkEmpty();
+	                }
+
+	                @Override
+	                public void changedUpdate(DocumentEvent e) {
+	                    // Not used for plain text components
+	                }
+	            });
 			topPanel.add(URLTextArea, BorderLayout.EAST);
 		frame.getContentPane().add(centerPanel, BorderLayout.CENTER);
 			centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
@@ -99,10 +129,21 @@ public class CrawlerMain {
 				seeResultButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		frame.getContentPane().add(filterPanel, BorderLayout.WEST);
 			filterPanel.add(filterScrollPane);
+				filterScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 				filterScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-					filterScrollPane.add(new StryckyzzzFilterComponent());
-			filterPanel.add(filterButton);
-				//filterButton.addActionListener(filterResultPanel());
+				filterScrollPane.setViewportView(SzzzFP);
+				filterScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+				filterPanel.addComponentListener(new ComponentAdapter() {
+					@Override
+					public void componentResized(ComponentEvent e) {
+						filterScrollPane.setPreferredSize(
+								new Dimension(
+										frame.getContentPane().getWidth() / 3  + 100, 
+										(int) (frame.getContentPane().getHeight() / 1.33)
+										)
+								); 
+					}
+				});
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 			bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 			bottomPanel.add(stopCrawlingButton);
