@@ -16,9 +16,9 @@ public class LinkExtractor {
     private static final Pattern LINK_PATTERN = Pattern.compile(
         "<a\\s+(?:[^>]*?\\s+)?href=([\"'])(.*?)\\1",
         Pattern.CASE_INSENSITIVE);
+    private static List<String> links = new ArrayList<>();
 
     public static List<String> extractLinks(String html, String baseUrl) {
-        List<String> links = new ArrayList<>();
         Matcher matcher = LINK_PATTERN.matcher(html);
         while (matcher.find()) {
             String link = matcher.group(2).trim();
@@ -46,6 +46,11 @@ public class LinkExtractor {
             }
         }
         return links;
+    }
+    
+    public static List<String> getLinks() {
+    	if(links == null) return null;
+    	return links;
     }
 }
 

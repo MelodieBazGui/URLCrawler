@@ -1,10 +1,15 @@
 package userInterface;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -15,8 +20,8 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import stryckyzzzComponents.BrowserButton;
 import stryckyzzzComponents.StryckyzzzFilterComponent;
+import stryckyzzzComponents.UrlButtonPanel;
 import stryckyzzzUrlCrawler.CrawlerController;
 import utils.Logger;
 
@@ -44,10 +49,10 @@ public class CrawlerMain {
 			private JTextArea URLTextArea = new JTextArea("");
 		private JPanel centerPanel = new JPanel();
 			private JScrollPane linkScrollPane = new JScrollPane();
+				private JPanel linkPanel = new JPanel();
 			private JButton seeResultButton = new JButton("See Results");
 		private JPanel filterPanel = new JPanel();
 			private JScrollPane filterScrollPane = new JScrollPane();
-				private JPanel linkPanel = new JPanel();
 			private JButton filterButton = new JButton("Filter Results");
 		private JPanel bottomPanel = new JPanel();
 			private JButton stopCrawlingButton = new JButton("Stop Crawling");
@@ -76,12 +81,22 @@ public class CrawlerMain {
 				URLLabel.setFont(new Font("URLLabelName", Font.BOLD, 18));
 			topPanel.add(URLTextArea, BorderLayout.EAST);
 		frame.getContentPane().add(centerPanel, BorderLayout.CENTER);
+			centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 			centerPanel.add(linkScrollPane);
+				linkScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 				linkScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-					linkScrollPane.add(linkPanel);
-						linkPanel.setLayout(new BoxLayout(linkPanel, BoxLayout.X_AXIS));
+				linkScrollPane.setViewportView(linkPanel);
+				linkScrollPane.setAlignmentX(Component.RIGHT_ALIGNMENT);
+				centerPanel.addComponentListener(new ComponentAdapter() {
+				    @Override
+				    public void componentResized(ComponentEvent e) {
+				    	linkScrollPane.setPreferredSize(new Dimension(centerPanel.getWidth() - 200, centerPanel.getHeight() - 100));
+				        centerPanel.revalidate();
+				    }
+				});
 			centerPanel.add(seeResultButton);
 				seeResultButton.addActionListener(seeButtonResultActionListener());
+				seeResultButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		frame.getContentPane().add(filterPanel, BorderLayout.WEST);
 			filterPanel.add(filterScrollPane);
 				filterScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -98,29 +113,16 @@ public class CrawlerMain {
 			bottomPanel.add(crawlingText);
 		frame.setVisible(true);
     }
-    
-    
 
 	private ActionListener seeButtonResultActionListener() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				updateJScrollPane();
 				Logger.logInfo("See Results Button pressed");
+				new UrlButtonPanel(linkPanel);
+				linkScrollPane.revalidate();
+				linkScrollPane.repaint();
 			}
 		};
-	}
-
-	private void updateJScrollPane() {
-		if (cc != null) {
-			cc.getVisited().forEach(s -> {
-				linkScrollPane.add(new BrowserButton(s));
-				Logger.logInfo("Added button for URL : " + s);
-				linkScrollPane.repaint();
-				Logger.logInfo("Repainted linkScrollPane");
-			});
-		} else {
-			Logger.logInfo("CrawlerControler is Null, no buttons added");
-		}
 	}
     
     /**
@@ -140,43 +142,44 @@ public class CrawlerMain {
 	}
 
     /**
-     * Method that starts the crawling when the button is clicked
-     * This is quite weirdly written and i have no better idea to make that better
-     * @return ActionListener
+     * Returns an ActionListener to start crawling when the button is clicked.
+     * Handles threading and UI updates safely.
      */
-	private ActionListener startCrawlingButtonListener() {
+    private ActionListener startCrawlingButtonListener() {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	cc = new CrawlerController(URLTextArea.getText());
-                if (!isCrawling) {
-                    Logger.resetLogFile();
-                    Logger.logInfo("Crawler started.");
-                    isCrawling = true;
-                    crawlingText.setText("Currently Crawling");
-                    cc.startCrawl();
-                    stopCrawlingButton.setEnabled(true);
-                    Logger.logInfo("Crawling process completed.");
-                    Logger.logDuration("Crawling process");
-                } else {
-                	Logger.logInfo("Crawler already started, stop clicking the button");
+                if (isCrawling) {
+                    Logger.logInfo("Crawler already started, stop clicking the button");
                     startCrawlButton.setEnabled(false);
-                    String originalText = startCrawlButton.getText();
                     startCrawlButton.setText("Already Crawling");
-                    //Yes i am using a thread instead of a javax.swing.Timer, deal with it.
-                    new Thread(() -> {
-                        try {
-                            Thread.sleep(1000);
-                            //Yes i am using javax.swing.SwingUtilities anyway, deal with it.
-                            SwingUtilities.invokeLater(() -> {
-                                startCrawlButton.setText(originalText);
-                                startCrawlButton.setEnabled(true);
-                            });
-                        } catch (InterruptedException ex) {
-                            ex.printStackTrace();
-                        }
-                    }).start();
+                    return;
                 }
+
+                cc = new CrawlerController(URLTextArea.getText());
+                isCrawling = true;
+                String originalText = startCrawlButton.getText();
+
+                Logger.resetLogFile();
+                Logger.logInfo("Crawler started.");
+                Logger.logDuration("Crawling process");
+                crawlingText.setText("Currently Crawling");
+                startCrawlButton.setEnabled(false);
+                stopCrawlingButton.setEnabled(true);
+
+                new Thread(() -> {
+                    cc.startCrawl();  // Assumes this is blocking
+
+                    SwingUtilities.invokeLater(() -> {
+                        isCrawling = false;
+                        startCrawlButton.setEnabled(true);  // Re-enable
+                        startCrawlButton.setText(originalText);
+                        crawlingText.setText("Crawling finished");
+                        stopCrawlingButton.setEnabled(false);
+                        Logger.logInfo("Crawling process completed.");
+                    });
+                }).start();
             }
         };
-	}
+    }
+
 }

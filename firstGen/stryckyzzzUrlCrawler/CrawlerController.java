@@ -5,7 +5,7 @@ import java.util.concurrent.*;
 import crawlerUtils.HttpRequester;
 import crawlerUtils.LinkExtractor;
 import crawlerUtils.RobotsTxtParser;
-import crawlerUtils.TxtFileHandler;
+import crawlerUtils.fileHandler.TxtFileHandler;
 import utils.Logger;
 import utils.ObservableSet;
 
@@ -26,6 +26,7 @@ public class CrawlerController {
     private ObservableSet<String> visited = new ObservableSet<String>(ConcurrentHashMap.newKeySet());
     private final Queue<String> toVisit = new ConcurrentLinkedQueue<>();
     private volatile boolean stopRequested = false;
+    public boolean finishedCrawling;
 
     public CrawlerController(String baseUrl) {
         this.baseUrl = baseUrl;
@@ -38,6 +39,7 @@ public class CrawlerController {
      * Logs most actions taken in debut_log.txt
      */
     public void startCrawl() {
+    	finishedCrawling = false;
         long startTime = System.currentTimeMillis();
 
         try {
@@ -70,6 +72,7 @@ public class CrawlerController {
 
         long endTime = System.currentTimeMillis();
         Logger.logInfo("✅ Crawl finished in " + (endTime - startTime) + " ms");
+        finishedCrawling = true;
     }
 
     /**
@@ -142,9 +145,5 @@ public class CrawlerController {
             Logger.logError("getDomainRobotsTxt -> " + url, e);
             return "https://www.royalqueenseeds.fr/robots.txt";
         }
-    }
-    
-    public ObservableSet<String> getVisited() {
-    	return visited;
     }
 }
