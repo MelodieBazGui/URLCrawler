@@ -23,7 +23,7 @@ import java.net.URL;
 public class CrawlerController {
 
     private final String baseUrl;
-    private ObservableSet<String> visited = new ObservableSet<String>(ConcurrentHashMap.newKeySet());
+    private volatile ObservableSet<String> visited = new ObservableSet<String>(ConcurrentHashMap.newKeySet());
     private final Queue<String> toVisit = new ConcurrentLinkedQueue<>();
     private volatile boolean stopRequested = false;
     public boolean finishedCrawling;

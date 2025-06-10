@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class StryckyzzzFilterPanel extends JPanel {
@@ -18,7 +19,6 @@ public class StryckyzzzFilterPanel extends JPanel {
     private DefaultListModel<String> selectedFilterModel;
     private JList<String> selectedFilterList;
     private JPanel topPanel;
-    private JPanel buttonPanel;
     private JPanel customFilterPanel;
     private JScrollPane scrollPane;
     private JPanel selectedFilterPanel;
@@ -30,18 +30,8 @@ public class StryckyzzzFilterPanel extends JPanel {
     }
 
     private void initComponents(List<String> items) {
-    	
-        buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         customFilterPanel = new JPanel(new BorderLayout());
         selectedFilterPanel = new JPanel(new BorderLayout());
-
-        List<String> topFilters = getTopFrequentStrings(items, 3);
-
-        for (String filter : topFilters) {
-            JButton filterButton = new JButton(filter);
-            filterButton.addActionListener(e -> addFilter(filter));
-            buttonPanel.add(filterButton);
-        }
 
         customFilterArea = new JTextArea(3, 20);
         JButton applyCustomFilterButton = new JButton("Apply Custom Filter");
@@ -69,8 +59,7 @@ public class StryckyzzzFilterPanel extends JPanel {
         selectedFilterPanel.add(scrollPane_1, BorderLayout.CENTER);
 
         topPanel = new JPanel(new BorderLayout());
-        topPanel.add(buttonPanel, BorderLayout.CENTER);
-        topPanel.add(customFilterPanel, BorderLayout.EAST);
+        topPanel.add(customFilterPanel, BorderLayout.NORTH);
 
         add(topPanel, BorderLayout.NORTH);
         add(selectedFilterPanel, BorderLayout.CENTER);
@@ -86,16 +75,18 @@ public class StryckyzzzFilterPanel extends JPanel {
         return Collections.list(selectedFilterModel.elements());
     }
     
-    private List<String> getTopFrequentStrings(List<String> input, int topN) {
-        Map<String, Integer> freqMap = new HashMap<>();
-        for (String item : input) {
-            freqMap.put(item, freqMap.getOrDefault(item, 0) + 1);
+    public static void filterComponentsByText(JPanel panel, List<String> keywords) {
+    	String regex = String.join("|", keywords);
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+    	
+        for (Component c : panel.getComponents()) {
+        	if(c.getClass().getCanonicalName().contains("Jbutton")) {
+        		if (!pattern.matcher(((JButton) (c)).getText()).find()) {
+        			panel.remove(c);
+        		};
+        	};
         }
-
-        return freqMap.entrySet().stream()
-                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
-                .limit(topN)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+        panel.revalidate();
+        panel.repaint();
     }
 }

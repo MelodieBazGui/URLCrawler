@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,6 +24,8 @@ import utils.Logger;
 
 import java.awt.FlowLayout;
 import javax.swing.JScrollPane;
+import java.awt.GridLayout;
+import javax.swing.BoxLayout;
 
 
 /**
@@ -47,11 +51,11 @@ public class CrawlerMain {
 				private JPanel linkPanel = new JPanel();
 			private JPanel resultButtonOptions = new JPanel();
 				private JButton seeResultButton = new JButton("See Results");
-				private JButton resetLinkPanel = new JButton("Reset Results");
 		private JPanel filterPanel = new JPanel();
 			private JScrollPane filterScrollPane = new JScrollPane();
 				private StryckyzzzFilterPanel SzzzFP = new StryckyzzzFilterPanel();
-			private JButton filterButton = new JButton("Filter Results");
+			private JPanel filterButtonPanel = new JPanel();
+				private JButton filterButton = new JButton("Filter Results");
 		private JPanel bottomPanel = new JPanel();
 			private JButton stopCrawlingButton = new JButton("Stop Crawling");
 			private String buttonDefaultText = "Start Crawling";
@@ -95,15 +99,13 @@ public class CrawlerMain {
 				});
 			centerPanel.add(resultButtonOptions, BorderLayout.SOUTH);
 				resultButtonOptions.setLayout(new FlowLayout());
-				resultButtonOptions.add(resetLinkPanel);
-				resultButtonOptions.add(seeResultButton);
-					resetLinkPanel.addActionListener(resetJpanelView());
+			    resultButtonOptions.add(seeResultButton);
 					seeResultButton.addActionListener(seeButtonResultActionListener());
 		frame.getContentPane().add(filterPanel, BorderLayout.WEST);
-			filterPanel.add(filterScrollPane, BorderLayout.EAST);
+			filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
+			filterPanel.add(filterScrollPane);
 				filterScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 				filterScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-				filterScrollPane.setViewportView(SzzzFP);
 				filterScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
 				filterPanel.addComponentListener(new ComponentAdapter() {
 					@Override
@@ -116,6 +118,11 @@ public class CrawlerMain {
 								); 
 					}
 				});
+			filterPanel.add(SzzzFP);
+			filterPanel.add(filterButtonPanel);
+				filterButtonPanel.setLayout(new BoxLayout(filterButtonPanel, BoxLayout.X_AXIS));
+				filterButtonPanel.add(filterButton);
+					filterButton.addActionListener(filterButtonFilterResultsActionListener());
 		frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 			bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 			bottomPanel.add(stopCrawlingButton);
@@ -127,16 +134,16 @@ public class CrawlerMain {
 		frame.setVisible(true);
     }
 
-	private ActionListener resetJpanelView() {
-		return new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				linkPanel.removeAll();
-				linkPanel.revalidate();
-				linkPanel.repaint();
-			}
-		};	
-	}
-
+    private ActionListener filterButtonFilterResultsActionListener() {
+    	return new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    			StryckyzzzFilterPanel.filterComponentsByText(linkPanel, SzzzFP.getSelectedFilters());
+				linkScrollPane.revalidate();
+				linkScrollPane.repaint();
+    		}
+    	};
+    }
+    
 	private ActionListener seeButtonResultActionListener() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
