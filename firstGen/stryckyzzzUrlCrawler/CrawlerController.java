@@ -27,6 +27,7 @@ public class CrawlerController {
     private final Queue<String> toVisit = new ConcurrentLinkedQueue<>();
     private volatile boolean stopRequested = false;
     public boolean finishedCrawling;
+	private Boolean invalidURL = null;
 
     public CrawlerController(String baseUrl) {
         this.baseUrl = baseUrl;
@@ -48,9 +49,11 @@ public class CrawlerController {
             RobotsTxtParser.parseRobotsTxt(getDomainRobotsTxt(baseUrl));
         } catch (Exception e) {
             Logger.logError("startCrawl setup", e);
+            invalidURL = true;
             return;
         }
 
+        invalidURL = false;
         Logger.logInfo("Starting crawl at: " + baseUrl);
         toVisit.add(baseUrl);
 
@@ -147,4 +150,8 @@ public class CrawlerController {
             return "https://www.royalqueenseeds.fr/robots.txt";
         }
     }
+
+	public Boolean getInvalidURL() {
+		return invalidURL;
+	}
 }

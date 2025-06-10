@@ -15,6 +15,7 @@ public class StryckyzzzJTextArea extends JTextArea implements ContentChangeListe
 	private static final long serialVersionUID = 8673621449413904005L;
 
 	private String previous;
+	public static final String DEFAULT_TEXT = "https://www.yourweburl.extension";
 	
 	public StryckyzzzJTextArea (String s) {
 		super(s);
@@ -34,6 +35,9 @@ public class StryckyzzzJTextArea extends JTextArea implements ContentChangeListe
                 String newText = getText();
                 if (hasChanged()) {
                     setText(newText);
+                }
+                if (isEmpty()) {
+                	setToDefault();
                 }
             }
         });
@@ -55,6 +59,16 @@ public class StryckyzzzJTextArea extends JTextArea implements ContentChangeListe
 	@Override
 	public String getPrevious() {
 		return this.previous;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return this.getText().isBlank();
+	}
+
+	@Override
+	public void setToDefault() {
+		setText(DEFAULT_TEXT);
 	}
 	
 }

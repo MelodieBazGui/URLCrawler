@@ -4,30 +4,21 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.JTextComponent;
 
-import stryckyzzzComponents.StryckyzzzFilterPanel;
-import stryckyzzzComponents.UrlButtonPanel;
+import stryckyzzzComponents.*;
 import stryckyzzzUrlCrawler.CrawlerController;
 import utils.Logger;
-import utils.interfaces.ContentChangeListener;
 
 import java.awt.FlowLayout;
 import javax.swing.JScrollPane;
@@ -45,17 +36,18 @@ public class CrawlerMain {
 
     public static final String CrawlerVersion = "CustomCrawler/0.1-dev";
     private static CrawlerController cc;
-    private static final String defaultLinkFormat = "https://www.";
 	
 	private  JFrame frame = new JFrame();
 		private JPanel topPanel = new JPanel();
 			private JLabel crawlerLabel = new JLabel("Strycky's Crawler");
 			private JLabel URLLabel = new JLabel("URL : ");
-			private JTextArea StryckyzzzJTextArea = new StryckyzzzJTextArea(defaultLinkFormat);
+			private StryckyzzzJTextArea SzzzJTA = new StryckyzzzJTextArea(StryckyzzzJTextArea.DEFAULT_TEXT);
 		private JPanel centerPanel = new JPanel();
 			private JScrollPane linkScrollPane = new JScrollPane();
 				private JPanel linkPanel = new JPanel();
-			private JButton seeResultButton = new JButton("See Results");
+			private JPanel resultButtonOptions = new JPanel();
+				private JButton seeResultButton = new JButton("See Results");
+				private JButton resetLinkPanel = new JButton("Reset Results");
 		private JPanel filterPanel = new JPanel();
 			private JScrollPane filterScrollPane = new JScrollPane();
 				private StryckyzzzFilterPanel SzzzFP = new StryckyzzzFilterPanel();
@@ -70,6 +62,7 @@ public class CrawlerMain {
 	public boolean isCrawling = false;
 
 	/**
+	 * @wbp.parser.entryPoint
 	 * 
 	 */
     public void window() {
@@ -82,37 +75,13 @@ public class CrawlerMain {
     		topPanel.setLayout(new BorderLayout());
     		topPanel.add(crawlerLabel, BorderLayout.WEST);
 				crawlerLabel.setFont(new Font("CrawlerName", Font.BOLD, 15));
-			URLLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+			URLLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			topPanel.add(URLLabel, BorderLayout.CENTER);
 				URLLabel.setFont(new Font("URLLabelName", Font.BOLD, 18));
-				URLLabel.addContentChangeListener(new ContentChangeListener() {
-	                private void checkEmpty() {
-	                    SwingUtilities.invokeLater(() -> {
-	                        if (URLLabel.getText().trim().isEmpty()) {
-	                        	URLLabel.setText(defaultLinkFormat);
-	                        }
-	                    });
-	                }
-
-	                @Override
-	                public void insertUpdate(DocumentEvent e) {
-	                    // Optional: do nothing on insert
-	                }
-
-	                @Override
-	                public void removeUpdate(DocumentEvent e) {
-	                    checkEmpty();
-	                }
-
-	                @Override
-	                public void changedUpdate(DocumentEvent e) {
-	                    // Not used for plain text components
-	                }
-	            });
-			topPanel.add(URLTextArea, BorderLayout.EAST);
+			topPanel.add(SzzzJTA, BorderLayout.EAST);
 		frame.getContentPane().add(centerPanel, BorderLayout.CENTER);
-			centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-			centerPanel.add(linkScrollPane);
+			centerPanel.setLayout(new BorderLayout(5,3));
+			centerPanel.add(linkScrollPane, BorderLayout.CENTER);
 				linkScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 				linkScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				linkScrollPane.setViewportView(linkPanel);
@@ -124,11 +93,14 @@ public class CrawlerMain {
 				        centerPanel.revalidate();
 				    }
 				});
-			centerPanel.add(seeResultButton);
-				seeResultButton.addActionListener(seeButtonResultActionListener());
-				seeResultButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
+			centerPanel.add(resultButtonOptions, BorderLayout.SOUTH);
+				resultButtonOptions.setLayout(new FlowLayout());
+				resultButtonOptions.add(resetLinkPanel);
+				resultButtonOptions.add(seeResultButton);
+					resetLinkPanel.addActionListener(resetJpanelView());
+					seeResultButton.addActionListener(seeButtonResultActionListener());
 		frame.getContentPane().add(filterPanel, BorderLayout.WEST);
-			filterPanel.add(filterScrollPane);
+			filterPanel.add(filterScrollPane, BorderLayout.EAST);
 				filterScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 				filterScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				filterScrollPane.setViewportView(SzzzFP);
@@ -155,6 +127,16 @@ public class CrawlerMain {
 		frame.setVisible(true);
     }
 
+	private ActionListener resetJpanelView() {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				linkPanel.removeAll();
+				linkPanel.revalidate();
+				linkPanel.repaint();
+			}
+		};	
+	}
+
 	private ActionListener seeButtonResultActionListener() {
 		return new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -177,6 +159,7 @@ public class CrawlerMain {
 					cc.crawlerStop();
 					stopCrawlingButton.setEnabled(false);
 					crawlingText.setText(crawlingTextDefault);
+					startCrawlButton.setEnabled(true);
 				}
 			}
 		};
@@ -195,8 +178,12 @@ public class CrawlerMain {
                     startCrawlButton.setText("Already Crawling");
                     return;
                 }
+                
+                linkPanel.removeAll();
+                linkPanel.revalidate();
+                linkPanel.repaint();
 
-                cc = new CrawlerController(URLTextArea.getText());
+                cc = new CrawlerController(SzzzJTA.getText());
                 isCrawling = true;
                 String originalText = startCrawlButton.getText();
 
@@ -208,11 +195,16 @@ public class CrawlerMain {
                 stopCrawlingButton.setEnabled(true);
 
                 new Thread(() -> {
-                    cc.startCrawl();  // Assumes this is blocking
-
+                    try {
+                        cc.startCrawl();
+                        Logger.logInfo("startCrawl() finished");
+                    } catch (Exception ex) {
+                        Logger.logError("Crawling failed: " , ex);
+                        ex.printStackTrace();
+                    }
                     SwingUtilities.invokeLater(() -> {
                         isCrawling = false;
-                        startCrawlButton.setEnabled(true);  // Re-enable
+                        startCrawlButton.setEnabled(true);
                         startCrawlButton.setText(originalText);
                         crawlingText.setText("Crawling finished");
                         stopCrawlingButton.setEnabled(false);
@@ -222,5 +214,6 @@ public class CrawlerMain {
             }
         };
     }
+
 
 }

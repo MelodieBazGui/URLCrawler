@@ -5,7 +5,7 @@ public interface ContentChangeListener {
 	    void update(String newValue);
 	    boolean hasChanged();
 	    boolean isEmpty();
-	    String setToDefault();
+	    void setToDefault();
 	    String getCurrent();
 	    String getPrevious();
 	    
